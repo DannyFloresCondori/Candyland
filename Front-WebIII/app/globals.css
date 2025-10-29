@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    /* Paleta base: tonos rosados suaves y complementarios para un negocio de postres */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 6%;
+
+    /* Color principal (rosa de marca) - usado en botones y elementos destacados */
+    --primary: 330 85% 60%; /* rosa vivo */
+    --primary-foreground: 0 0% 98%; /* texto claro sobre rosa */
+
+    /* Secundarios y tonos de soporte (rosados pálidos para fondos y acentos) */
+    --secondary: 330 30% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
+    /* Acento suave para tarjetas/hover */
+    --accent: 330 60% 96%;
+    --accent-foreground: 0 0% 9%;
+
+    /* Errores se mantienen en rojo para claridad */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 330 85% 40%;
+
+    /* Paleta de gráficas con variantes rosadas y complementos suaves */
+    --chart-1: 330 85% 60%;
+    --chart-2: 338 65% 50%;
+    --chart-3: 330 40% 30%;
+    --chart-4: 290 60% 60%;
+    --chart-5: 14 90% 65%;
+
+    --radius: 0.5rem;
+  }
+  .dark {
+    /* Modo oscuro: mantener la identidad rosada adaptando tonos para contraste */
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Rosa principal más claro sobre fondo oscuro */
+    --primary: 330 85% 70%;
+    --primary-foreground: 0 0% 6%;
+
+    --secondary: 330 20% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 330 60% 18%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 330 85% 70%;
+
+    --chart-1: 330 85% 70%;
+    --chart-2: 338 65% 55%;
+    --chart-3: 330 40% 30%;
+    --chart-4: 290 60% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Utilidades de marca: degradados y fondos coordinados para public y admin */
+@layer components {
+  .bg-public-gradient {
+    /* Degradado vertical sutil usando el color primario en distintas transparencias */
+    background-image: linear-gradient(180deg, hsl(var(--primary) / 0.14), hsl(var(--primary) / 0.03));
+  }
+
+  .bg-admin-gradient {
+    /* Variante más neutra para el dashboard, mantiene la identidad rosada */
+    background-image: linear-gradient(180deg, hsl(var(--primary) / 0.10), hsl(var(--background) / 1));
+  }
+
+  .navbar-bg {
+    /* Fondo del navbar: semitransparente para que el degradado subyacente tenga presencia */
+    background-color: hsl(var(--primary) / 0.08);
+    backdrop-filter: blur(4px);
+  }
+
+  .footer-bg {
+    /* Fondo del footer: tono suave para separar visualmente del contenido */
+    background-color: hsl(var(--primary) / 0.06);
+  }
+
+  /* Asegurar utilidades de texto por si no están presentes en algunos entornos */
+  .text-primary {
+    color: hsl(var(--primary));
+  }
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+}
