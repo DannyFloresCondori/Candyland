@@ -6,18 +6,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ecommerceService, EcommerceDetail } from '@/lib/services/ecommerce.service';
 import { productService } from '@/lib/services/product.service';
-import { useCart } from '@/hooks/use-cart';
+import { ProductImage, useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Package, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { ProductImages } from '@/components/ui/product-image';
 import { toast } from 'sonner';
 
-export default function ProductDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
   const router = useRouter();
@@ -41,24 +38,33 @@ export default function ProductDetailPage({
   const handleAddToCart = async () => {
     if (!product) return;
 
-    // Construimos el objeto EcommerceDetail compatible con tu servicio
     const newItem: EcommerceDetail = {
       id: crypto.randomUUID(),
       productId: product.id,
       quantity,
       unitPrice: product.price,
       subTotal: product.price * quantity,
-      product: { name: product.name, images: product.images ?? [] },
+      product: {
+        name: product.name,
+        images: Array.isArray(product?.images)
+          ? product.images.filter((img): img is ProductImage => typeof img === 'object' && img !== null)
+          : [],
+        id: product.id,
+        price: product.price,
+        stock: product.stock ?? 0,
+        categoryId: product.categoryId ?? ''
+      },
     };
 
-    await addItem(product.id, quantity); // ya usa useCart
-    toast.success(`${product.name} added to cart`);
+    await addItem(product.id, quantity);
+    toast.success(`${product.name} agregado al carrito`);
     router.push('/cart');
   };
 
   const incrementQuantity = () => {
     if (product && quantity < product.stock) setQuantity(quantity + 1);
   };
+
   const decrementQuantity = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
@@ -74,9 +80,9 @@ export default function ProductDetailPage({
   if (!product) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-lg text-slate-600">Product not found</p>
+        <p className="text-lg text-slate-600">Producto no encontrado</p>
         <Link href="/home">
-          <Button className="mt-4">Back to Home</Button>
+          <Button className="mt-4">Volver al inicio</Button>
         </Link>
       </div>
     );
@@ -87,19 +93,20 @@ export default function ProductDetailPage({
       <Link href="/home">
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Products
+          Volver a Productos
         </Button>
       </Link>
 
       {/* Detalle principal */}
       <div className="grid gap-8 md:grid-cols-2">
         <Card className="overflow-hidden">
-    <div className="aspect-square bg-muted/50 flex items-center justify-center">
-            {product.images?.[0] ? (
-              <img
-                src={product.images[0]}
+          <div className="aspect-square bg-slate-100 flex items-center justify-center relative">
+            {product.images && product.images.length > 0 ? (
+              <ProductImages
+                images={product.images}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                className="object-contain w-full h-full"
+                maxVisible={1}
               />
             ) : (
               <Package className="h-32 w-32 text-slate-400" />
@@ -107,33 +114,36 @@ export default function ProductDetailPage({
           </div>
         </Card>
 
+        {/* Información del producto */}
         <div className="space-y-6">
           <div>
             <h1 className="text-4xl font-bold">{product.name}</h1>
             {product.categoryId && (
-              <p className="text-lg text-foreground/80 mt-2">
-                Category ID: {product.categoryId}
+              <p className="text-lg text-slate-600 mt-2">
+                Categoría: {product.category?.name || `ID ${product.categoryId}`}
               </p>
             )}
           </div>
 
           <div className="flex items-baseline gap-4">
-            <span className="text-4xl font-bold text-primary">
-              ${product.price}
+            <span className="text-4xl font-bold text-blue-600">
+              BOB {Math.round(product.price)}
             </span>
             <span
               className={`text-lg ${
                 product.stock > 0 ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              {product.stock > 0
+                ? `${product.stock} en stock`
+                : 'Sin stock disponible'}
             </span>
           </div>
 
-            {product.description && (
+          {product.description && (
             <div>
-              <h2 className="text-xl font-semibold mb-2">Description</h2>
-                <p className="text-foreground/80">{product.description}</p>
+              <h2 className="text-xl font-semibold mb-2">Descripción</h2>
+              <p className="text-slate-600">{product.description}</p>
             </div>
           )}
 
@@ -141,7 +151,9 @@ export default function ProductDetailPage({
             <Card>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Quantity</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Cantidad
+                  </label>
                   <div className="flex items-center gap-4">
                     <Button
                       variant="outline"
@@ -175,7 +187,8 @@ export default function ProductDetailPage({
 
                 <Button className="w-full" size="lg" onClick={handleAddToCart}>
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart - ${(product.price * quantity).toFixed(2)}
+                  Agregar al carrito - BOB{' '}
+                  {(product.price * quantity).toFixed(2)}
                 </Button>
               </CardContent>
             </Card>
@@ -185,29 +198,26 @@ export default function ProductDetailPage({
 
       {/* Productos relacionados */}
       <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">More from this category</h2>
+        <h2 className="text-2xl font-bold mb-6">Más de esta categoría</h2>
 
         {loadingRelated ? (
-          <p className="text-slate-500">Loading related products...</p>
+          <p className="text-slate-500">Cargando productos relacionados...</p>
         ) : relatedProducts.length === 0 ? (
-          <p className="text-slate-500">No related products found.</p>
+          <p className="text-slate-500">No hay productos relacionados.</p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {relatedProducts
               .filter((p) => p.id !== product.id)
               .map((related) => (
-                <Link
-                  key={related.id}
-                  href={`/products/${related.id}`}
-                  className="block"
-                >
+                <Link key={related.id} href={`/products/${related.id}`} className="block">
                   <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-square bg-slate-100 flex items-center justify-center">
-                      {related.images?.[0] ? (
-                        <img
-                          src={related.images[0]}
+                    <div className="aspect-square bg-slate-100 flex items-center justify-center relative">
+                      {related.images?.length ? (
+                        <ProductImages
+                          images={related.images}
                           alt={related.name}
-                          className="h-full w-full object-cover"
+                          className="object-contain w-full h-full"
+                          maxVisible={1}
                         />
                       ) : (
                         <Package className="h-20 w-20 text-slate-400" />
@@ -215,8 +225,8 @@ export default function ProductDetailPage({
                     </div>
                     <CardContent className="p-4">
                       <h3 className="text-lg font-semibold truncate">{related.name}</h3>
-                      <p className="text-primary font-medium">
-                        ${related.price.toFixed(2)}
+                      <p className="text-blue-600 font-medium">
+                        BOB {Math.round(related.price)}
                       </p>
                     </CardContent>
                   </Card>
