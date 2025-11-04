@@ -15,6 +15,7 @@ export class UsersService {
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>
   ) { }
+   
   async create(createUserDto: CreateUserDto) {
     const { roleId, password, ...userData } = createUserDto;
     const role = await this.findRoleOrThrow(roleId);
